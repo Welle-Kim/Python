@@ -1,0 +1,38 @@
+# !/opt/homebrew/bin/chromedriver
+
+from selenium import webdriver
+from bs4 import BeautifulSoup as bs
+from urllib.parse import quote
+import requests
+import time
+import pandas as pd
+import re
+
+
+#드라이버 초기화
+driver = webdriver.Chrome("./chromedriver")
+#URL 얻기
+driver.get("https://movie.daum.net/moviedb/grade?movieId=131275")
+
+driver.execute_script("window.scrollTo(0, 53)") 
+
+SCROLL_PAUSE_SEC = 1
+cnt=0
+
+
+while True:
+    
+    try:
+        last_height = driver.execute_script("return document.body.scrollHeight")
+        driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+        time.sleep(SCROLL_PAUSE_SEC)
+        new_height = driver.execute_script("return document.body.scrollHeight")
+        if new_height == last_height:
+            break
+            xpath1 = """//*[@id="alex-area"]/div/div/div/div[3]/div[1]/button"""
+            driver.find_element_by_xpath(xpath1).click()
+        last_height = new_height
+    except:
+        if cnt==100:
+            break
+
