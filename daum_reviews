@@ -1,0 +1,81 @@
+#!/usr/bin/env python
+# coding: utf-8
+
+# In[7]:
+
+
+# !/opt/homebrew/bin/chromedriver
+
+
+# In[17]:
+
+
+from selenium import webdriver
+from bs4 import BeautifulSoup as bs
+from urllib.parse import quote
+import requests
+import time
+import pandas as pd
+import re
+
+
+# In[35]:
+
+
+## 카카오 페이지 영화순위(1~10순위 크롤링)
+
+from selenium import webdriver
+#드라이버 초기화
+
+driver = webdriver.Chrome("/opt/homebrew/bin/chromedriver")
+#URL 얻기
+file = open("test.txt","w",encoding="utf-8")
+file.close()
+
+kakaopage=[146656,61476,143722,110137,144508,107497,111490,121982,150296,122296]
+
+
+for k in kakaopage:
+    driver.get("https://movie.daum.net/moviedb/grade?movieId="+str(k))
+    driver.execute_script("window.scrollTo(0, 53)") 
+    review_list=[]
+    
+    while True:
+        try:
+            last_height = driver.execute_script("return document.body.scrollHeight")
+            driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+            time.sleep(1)
+            new_height = driver.execute_script("return document.body.scrollHeight")
+            if new_height == last_height:
+                xpath1 = """//*[@id="alex-area"]/div/div/div/div[3]/div[1]/button"""
+                driver.find_element_by_xpath(xpath1).click()
+        except:
+            break
+        last_height = new_height
+
+    html = driver.page_source
+    soup=bs(html,"html.parser")
+    reviews=soup.find_all("p",{'class':'desc_txt font_size_'})
+    for review in reviews:
+        review_list.append(review.get_text().strip())
+    #print(review_list)
+    
+
+
+    file = open("test.txt","a",encoding="utf-8")
+    for a in review_list:
+        file.write(a+"\n")
+    file.close()
+
+file = open("./test.txt", "r")
+strings = file.read()
+print(strings)
+
+file.close()
+
+
+# In[ ]:
+
+
+
+
