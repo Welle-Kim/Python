@@ -1,0 +1,56 @@
+from selenium import webdriver
+from bs4 import BeautifulSoup as bs
+from urllib.parse import quote
+import requests
+import time
+import pandas as pd
+import re
+import excel
+import csv
+import openpyxl
+import ssl
+ssl._create_default_https_context = ssl._create_unverified_context
+from selenium import webdriver
+import pandas as pd
+import numpy as np
+
+
+review_data=[]
+
+driver = webdriver.Chrome("/opt/homebrew/bin/chromedriver")
+driver.get("https://movie.daum.net/moviedb/grade?movieId=121250")
+driver.execute_script("window.scrollTo(0, 53)") 
+
+while True:
+    try:
+        last_height = driver.execute_script("return document.body.scrollHeight")
+        driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+        time.sleep(1)
+        new_height = driver.execute_script("return document.body.scrollHeight")
+        if new_height == last_height:
+            xpath1 = """//*[@id="alex-area"]/div/div/div/div[3]/div[1]/button"""
+            driver.find_element_by_xpath(xpath1).click()
+    except:
+        break
+    last_height = new_height
+    
+html = driver.page_source
+soup=bs(html,"html.parser")
+movie=soup.find_all("span",class_='txt_tit')[0].text
+
+
+reviews=soup.find_all("div",class_="cmt_info")
+for review in reviews:
+    try:
+        sentences=review.find("p",class_='desc_txt font_size_').text.strip()
+        sentence=re.sub('[^ ㄱ-ㅣ가-힣+]','',sentences)
+        
+    except AttributeError as err:
+        pass
+        
+    score=review.find("div",class_="ratings").text.strip()
+    review_data.append([movie,sentence,score])
+    print(review_data)
+    
+df=pd.DataFrame(review_data,columns=["Movie","Sentence","Score"])
+df.to_excel("New_age.xlsx")
